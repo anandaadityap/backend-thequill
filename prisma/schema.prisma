@@ -1,0 +1,109 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id String @id @default(cuid())
+  username String @unique @db.VarChar(50)
+  email String @unique @db.VarChar(50)
+  password String 
+  role Role @default(USER)
+  biodata String? @db.VarChar(100)
+  avatar_url String?
+  refresh_token String?
+  contents Content[]
+  clap Clap[]
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  deleted_at DateTime?
+  
+
+  @@map("users")
+}
+
+model Content {
+  id           String     @id @default(cuid())
+  title        String     @db.VarChar(50)
+  subject      String     @db.VarChar(100)
+  article      String 
+  image_banner String?
+  comments     Comment[]
+  claps        Clap[]
+  user_id      String
+  categories   ContentCategory[] 
+  recomendation       Boolean    @db.Boolean @default(false)
+  created_at   DateTime   @default(now())
+  updated_at   DateTime   @updatedAt
+
+  user         User     @relation(fields: [user_id], references: [id])
+
+  @@map("contents")
+}
+
+model Category {
+  id         String     @id @default(cuid())
+  name       String     @db.VarChar(50)
+  contents   ContentCategory[] 
+  created_at   DateTime   @default(now())
+  updated_at   DateTime   @updatedAt
+
+  @@map("categories")
+}
+
+model ContentCategory {
+  content_id  String
+  category_id String
+
+  content     Content    @relation(fields: [content_id], references: [id], onDelete: Cascade)
+  category    Category   @relation(fields: [category_id], references: [id], onDelete: Cascade)
+
+  @@id([content_id, category_id])
+  @@map("content_categories")
+}
+
+
+
+model Comment{
+  id String @id @default(cuid())
+  response String  @db.VarChar(100)
+  content_id String
+  claps   Clap[]
+  banned Boolean @db.Boolean
+  created_at   DateTime   @default(now())
+  updated_at   DateTime   @updatedAt
+
+  content Content @relation(fields: [content_id],references: [id])
+  @@map("comments")
+}
+
+model Clap{
+  id String @id @default(cuid())
+  comment_id String?
+  content_id String?
+  user_id String
+  created_at   DateTime   @default(now())
+  updated_at   DateTime   @updatedAt
+
+  comment Comment? @relation(fields: [comment_id],references: [id])
+  content Content? @relation(fields: [content_id],references: [id])
+  user User  @relation(fields: [user_id],references: [id])
+
+  @@map("claps")
+}
