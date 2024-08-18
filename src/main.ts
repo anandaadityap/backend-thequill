@@ -15,7 +15,7 @@ async function bootstrap() {
   );
   app.enableCors({
     credentials: true,
-    origin: 'https://social-marcy-taurus-labs-75cc6fb3.koyeb.app',
+    origin: process.env.URL_FRONTEND,
   });
   app.enableShutdownHooks();
   await app.listen(8080);
