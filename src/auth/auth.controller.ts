@@ -50,6 +50,7 @@ export class AuthController {
 
     response.cookie('refreshToken', refresh_token, {
       httpOnly: true,
+      secure: true,
       maxAge: 30 * 24 * 60 * 60 * 1000,
     });
 
